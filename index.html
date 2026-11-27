@@ -343,7 +343,7 @@ function pop(txt,x,y,ms){ms=ms||1100;const e=document.createElement('div');e.cla
 let WX='sun';const WXN={sun:'GÜNEŞLİ',rain:'YAĞMURLU',fog:'SİSLİ'};
 function pickWx(){WX=['sun','rain','fog'][Math.random()*3|0];$('#wx').textContent='HAVA: '+WXN[WX]}
 function wxBack(lim){if(WX==='rain'){g.fillStyle='rgba(40,48,66,.38)';g.fillRect(0,0,W,lim||G-5)}
- if(WX==='fog'){for(let y=0;y<G+4;y+=2){const a=Math.min(.55,.12+.45*Math.pow(y/G,2));g.fillStyle='rgba(226,231,236,'+a+')';g.fillRect(0,y,W,2)}}}
+ if(WX==='fog'){const L=lim||G;for(let y=0;y<Math.min(G+4,L);y+=2){const a=lim?.18+.12*Math.sin(y*.05):Math.min(.55,.12+.45*Math.pow(y/G,2));g.fillStyle='rgba(226,231,236,'+a+')';g.fillRect(0,y,W,2)}}}
 function wxFront(wall){if(WX==='rain'){g.fillStyle='rgba(205,220,240,.6)';const n=Math.round(W*H/220);for(let k=0;k<n;k++){const x=Math.round((k*37.7+wall*30)%(W+20))-10,y=Math.round((k*53.3+wall*190)%(H+10))-5;g.fillRect(x,y,1,3);g.fillRect(x-1,y+3,1,1)}
   g.fillStyle='rgba(225,235,250,.7)';for(let k=0;k<W/10;k++){const ph=(wall*3+k*.37)%1;if(ph<.15){const x=Math.round((k*97.1)%W),y=G+Math.round((k*31.7)%(H-G));g.fillRect(x-1,y,3,1)}}}
  if(WX==='fog'){for(let k=0;k<3;k++){const y=Math.round(G-14+k*9),x=Math.round(((wall*(4+k*2)+k*60)%(W+80))-40);g.fillStyle='rgba(240,243,246,.22)';g.fillRect(x-30,y,90,4);g.fillRect(x-10,y-2,50,2)}}}
@@ -691,31 +691,39 @@ function gpoly(a,pts,col){let y0=1e9,y1=-1e9;pts.forEach(q=>{y0=Math.min(y0,q[1]
  for(let y=Math.floor(y0);y<=Math.ceil(y1);y++){const yy=y+.5,xs=[];for(let i=0;i<pts.length;i++){const p=pts[i],q=pts[(i+1)%pts.length];if((p[1]<=yy&&q[1]>yy)||(q[1]<=yy&&p[1]>yy))xs.push(p[0]+(yy-p[1])*(q[0]-p[0])/(q[1]-p[1]))}
   xs.sort((m,n)=>m-n);for(let k=0;k+1<xs.length;k+=2){const xa=Math.round(xs[k]),xb=Math.round(xs[k+1]);if(xb>xa)a.fillRect(xa,y,xb-xa,1)}}}
 function bakeArena(){const n=document.createElement('canvas');n.width=W;n.height=H;const a=n.getContext('2d'),F=(x,y,w,h,c)=>{a.fillStyle=c;a.fillRect(x|0,y|0,w,h)},r=rnd(21);
- const tw=12,th=6,k=Math.max(3,Math.floor((Math.min(W*.46,H*.85)-tw/2)/tw)),hw=k*tw+tw/2,hh=k*th+th/2,cx=Math.round(W/2),cy=Math.round(Math.min(H*.62,H-hh-12)),D=8;
- AR={cx,cy,hw,hh,tw,th,k};
- const SK=['#16304e','#1d3b5c','#24496e','#2c5980','#356a92','#3f7ba3'],hz=Math.round(cy-hh*.2),bh=Math.ceil(hz/6);SK.forEach((c,i)=>F(0,i*bh,W,bh+1,c));
- for(let i=1;i<6;i++){const y=i*bh;for(let x=0;x<W;x+=2){F(x,y-1,1,1,SK[i]);F(x+1,y,1,1,SK[i-1])}}
- for(let q=0;q<W*hz/180;q++)F((r()*W)|0,(r()*hz*.6)|0,1,1,r()<.3?'#fff':'rgba(255,255,255,.45)');
- F(0,hz,W,H-hz,'#2a6a94');for(let y=hz;y<H;y+=3)for(let x=(y*7)%11;x<W;x+=11+((x*y)%5))F(x,y,3,1,'#3f86b0');
- gpoly(a,[[cx-hw,cy],[cx,cy+hh],[cx,cy+hh+D],[cx-hw,cy+D]],'#8a6440');gpoly(a,[[cx,cy+hh],[cx+hw,cy],[cx+hw,cy+D],[cx,cy+hh+D]],'#6a4a30');
- for(let x=cx-hw;x<=cx+hw;x+=2){const y=cy+D+Math.round((1-Math.abs(x-cx)/hw)*hh);F(x,y,2,1,'#d8ecf4')}
- const tile=(i,j,c)=>{const x=cx+(i-j)*tw/2,y=cy+(i+j)*th/2;for(let d=-th/2;d<th/2;d++){const w=Math.round(tw/2*(1-Math.abs(d+.5)/(th/2)));a.fillStyle=c;a.fillRect(Math.round(x-w),Math.round(y+d),w*2,1)}};
- for(let s2=-2*k;s2<=2*k;s2++)for(let i=-k;i<=k;i++){const j=s2-i;if(j<-k||j>k)continue;const path=i===0||j===0;tile(i,j,path?((i+j)%2?'#c4ad80':'#b8a274'):((i+j)%2?'#74a656':'#68984c'))}
- const cube=(i,j,h,top,l,rr)=>{const x=cx+(i-j)*tw/2,y=cy+(i+j)*th/2-h;gpoly(a,[[x-tw/2+1,y],[x,y+th/2],[x,y+th/2+h],[x-tw/2+1,y+h]],l);gpoly(a,[[x,y+th/2],[x+tw/2-1,y],[x+tw/2-1,y+h],[x,y+th/2+h]],rr);gpoly(a,[[x,y-th/2+1],[x+tw/2-1,y],[x,y+th/2],[x-tw/2+1,y]],top)};
- const tree=(i,j)=>{const x=Math.round(cx+(i-j)*tw/2),y=Math.round(cy+(i+j)*th/2);F(x-1,y-5,2,5,'#5a3a22');for(let q=0;q<9;q++){const w=Math.round(q*.7)+1;F(x-w,y-16+q,w*2,1,q%3?'#2f6a3a':'#3f8a4a')}};
- const deco=[[-3,1,'c'],[2,-3,'t'],[3,2,'c'],[-2,-3,'t'],[4,-1,'t'],[-4,3,'t'],[1,4,'c'],[-5,-1,'c'],[5,4,'t'],[-1,5,'t'],[6,-4,'c'],[-6,2,'t']].filter(([i,j])=>Math.abs(i)<=k-1&&Math.abs(j)<=k-1);
- deco.sort((p,q)=>(p[0]+p[1])-(q[0]+q[1])).forEach(([i,j,t])=>t=='c'?cube(i,j,7,'#d8a84a','#b07a2a','#8a5a1a'):tree(i,j));
+ const tw=14,th=7,cx=Math.round(W/2),cy=Math.round(H*.56);AR={cx,cy,tw,th};
+ F(0,0,W,H,'#6a9a4c');
+ const tile=(i,j,c)=>{const x=cx+(i-j)*tw/2,y=cy+(i+j)*th/2;if(x<-tw||x>W+tw||y<-th||y>H+th)return;for(let d=-th/2;d<th/2;d++){const w=Math.round(tw/2*(1-Math.abs(d+.5)/(th/2)));a.fillStyle=c;a.fillRect(Math.round(x-w),Math.round(y+d),w*2,1)}};
+ const N=Math.ceil(W/tw+H/th)+4;
+ for(let i=-N;i<=N;i++)for(let j=-N;j<=N;j++){const f=Math.sin(i*.45)*Math.cos(j*.38)+Math.sin((i+j)*.21)+Math.cos((i-j)*.17)*.6,road=i===0||j===0,road2=i-j===8||j-i===10;
+  let c=(i+j)%2?'#74a656':'#6c9d4f';if(f>1.25)c=(i+j)%2?'#5f8d45':'#5a8641';if(f<-1.55)c=(i+j)%2?'#a08e5e':'#968556';if(road||road2)c=(i+j)%2?'#c4ad80':'#b8a274';tile(i,j,c)}
+ for(let q=0;q<W*H/25;q++){const x=(r()*W)|0,y=(r()*H)|0;F(x,y,1,1,r()<.5?'#82b464':'#557f3c')}
+ const iso=(i,j)=>[cx+(i-j)*tw/2,cy+(i+j)*th/2];
+ const house=(i,j,wc,wd,rc,rd)=>{const[x,y]=iso(i,j),h=13,Wb=[x-tw,y],S=[x,y+th],E=[x+tw,y],Nn=[x,y-th],up=p=>[p[0],p[1]-h],ap=[x,y-h-9];
+  gpoly(a,[up(Wb),up(S),S,Wb],wc);gpoly(a,[up(S),up(E),E,S],wd);
+  [[x-tw+4,y-h+5],[x-tw+9,y-h+7.5]].forEach(([wx,wy])=>F(wx,wy,3,3,'#2c3640'));[[x+4,y-h+7.5],[x+9,y-h+5]].forEach(([wx,wy])=>F(wx,wy,3,3,'#24303a'));F(x-5,y+th-7,3,5,'#4a3424');
+  gpoly(a,[up(Wb),up(Nn),ap],rd);gpoly(a,[up(Nn),up(E),ap],rd);gpoly(a,[up(Wb),up(S),ap],rc);gpoly(a,[up(S),up(E),ap],rd)};
+ const tree=(i,j)=>{const[x0,y0]=iso(i,j),x=Math.round(x0),y=Math.round(y0);a.fillStyle='rgba(0,0,0,.18)';for(let d=-2;d<=2;d++)a.fillRect(x-6+Math.abs(d),y+d,12-2*Math.abs(d),1);
+  F(x-1,y-6,3,6,'#5a3a22');const blob=(cx2,cy2,rr,c)=>{a.fillStyle=c;for(let d=-rr;d<=rr;d++){const w=Math.round(Math.sqrt(rr*rr-d*d));a.fillRect(cx2-w,cy2+d,2*w+1,1)}};
+  blob(x,y-11,6,'#2c5e34');blob(x-1,y-12,5,'#3a7a42');blob(x-2,y-14,3,'#4f9a52')};
+ const crate=(i,j)=>{const[x,y]=iso(i,j),h=6,s=5;gpoly(a,[[x-s,y-h],[x,y+s/2-h],[x,y+s/2],[x-s,y]],'#b07a2a');gpoly(a,[[x,y+s/2-h],[x+s,y-h],[x+s,y],[x,y+s/2]],'#8a5a1a');gpoly(a,[[x,y-s/2-h],[x+s,y-h],[x,y+s/2-h],[x-s,y-h]],'#d8a84a')};
+ const rock=(i,j)=>{const[x,y]=iso(i,j);F(x-3,y-2,6,3,'#8a8f92');F(x-2,y-3,4,1,'#b0b5b8');F(x-3,y+1,6,1,'#5e6366')};
+ const used=new Set(),ok=(i,j)=>{const[x,y]=iso(i,j);return x>6&&x<W-6&&y>H*.16&&y<H-4&&Math.abs(i)>1&&Math.abs(j)>1&&!(Math.abs(i)<4&&Math.abs(j)<4)&&i-j!==8&&j-i!==10&&!used.has(i+','+j)};
+ const items=[];for(let q=0;q<400&&items.length<Math.round(W*H/900);q++){const i=Math.round((r()*2-1)*N),j=Math.round((r()*2-1)*N);if(!ok(i,j))continue;used.add(i+','+j);items.push([i,j,r()])}
+ const houses=[];[[-6,-3],[5,-7],[7,4],[-5,6],[10,-2],[-10,2]].forEach(([i,j])=>{const[x,y]=iso(i,j);if(x>tw+2&&x<W-tw-2&&y>H*.2&&y<H-th-2&&houses.length<3)houses.push([i,j])});
+ const all=[...items.map(([i,j,v])=>({i,j,k:v<.55?'t':v<.8?'c':'r'})),...houses.map(([i,j],q)=>({i,j,k:'h'+q}))].sort((p,q)=>(p.i+p.j)-(q.i+q.j));
+ const HC=[['#d9c8a0','#b8a47c','#a8432f','#7e3122'],['#a4573c','#7e412c','#4c4440','#3a3430'],['#c9cdd0','#9da2a6','#2f5a8a','#22446a']];
+ all.forEach(o=>{if(o.k=='t')tree(o.i,o.j);else if(o.k=='c')crate(o.i,o.j);else if(o.k=='r')rock(o.i,o.j);else{const c=HC[+o.k[1]%3];house(o.i,o.j,c[0],c[1],c[2],c[3])}});
  ARENA=n}
-const inAr=(x,y,m)=>Math.abs(x-AR.cx)/AR.hw+Math.abs(y-AR.cy)/AR.hh<=(m||1);
-function arPoint(minD){for(let q=0;q<40;q++){const x=AR.cx+(Math.random()*2-1)*AR.hw,y=AR.cy+(Math.random()*2-1)*AR.hh;if(inAr(x,y,.88)&&Math.hypot(x-AR.cx,(y-AR.cy)*2)>(minD||0))return{x,y}}return{x:AR.cx+AR.hw*.6,y:AR.cy}}
+function arPoint(minD){const p=gP();for(let q=0;q<40;q++){const x=8+Math.random()*(W-16),y=H*.2+Math.random()*(H*.78);if(Math.hypot(x-p.x,(y-p.y)*1.6)>(minD||0))return{x,y}}return{x:W*.85,y:p.y}}
 function startGame(i){pickWx();bakeArena();$('#selOv').hidden=true;$('#overOv').hidden=true;run=false;MODE='game';
  GM={pi:i,t:0,score:0,hp:3,max:3,en:[],boxes:[],fx:[],next:1.2,pan:i===1?2:0,dogT:0,dropT:0,slow:i===3?.75:1,over:0,lastShot:-1,aim:null,hurt:-9,dogN:0,mag:MAG,rel:-1,lvl:1};
  $('#hp').classList.add('on');$('#reloadBtn').hidden=false;gHud();banner('SEVİYE 1');setTimeout(nob,1400)}
 function gHud(){const M=GM;$('#alive').textContent='CAN '+M.hp+(M.pi===1?' · TAVA '+M.pan:'');$('#kills').textContent='ELEME '+M.score;$('#wx').textContent=M.rel>=0?'DOLDURULUYOR':'MERMİ '+M.mag+'/'+MAG;$('#hp i').style.right=(1+(1-M.hp/M.max)*100)+'%'}
-const gP=()=>({x:AR.cx,y:AR.cy});
+const gP=()=>({x:Math.round(W/2),y:Math.round(H*.56)});
 function gReload(){const M=GM;if(!M||M.over||M.rel>=0||M.mag===MAG)return;M.rel=M.t;sfx.reload();gHud()}
 function gSpawn(){const M=GM,L=M.lvl,p=gP(),cnt=L>=6?(Math.random()<.5?3:2):L>=3?2:1;
- for(let q=0;q<cnt;q++){const tg=arPoint(AR.hw*.5),run2=L>=3&&Math.random()<.25;
+ for(let q=0;q<cnt;q++){const tg=arPoint(Math.min(W,H)*.28),run2=L>=3&&Math.random()<.25;
   M.en.push({x:tg.x,y:-24-Math.random()*20,ly:tg.y,y0:-24,t0:M.t+q*.25,dur:Math.max(1.1,2.6-L*.2)*(.9+Math.random()*.2),landed:false,
    sp:Math.min(42,(8+L*3.5))*M.slow*(.85+Math.random()*.3)*(run2?1.6:1),fast:run2,k:(Math.random()*GSP.length)|0,face:tg.x<p.x?1:-1})}}
 function gKill(en,who){const M=GM;M.en.splice(M.en.indexOf(en),1);if(en.landed)M.boxes.push({x:en.x,y:en.y,t:M.t});M.score++;gHud();pop(who||(en.landed?'+1':'+1 HAVADA!'),OX+en.x*S,OY+(en.y-SH-4)*S,900);nz(now0(),.12,.2,{lp:500})}
@@ -739,7 +747,7 @@ function gUpd(dt){const M=GM;if(M.over)return;M.t+=dt;const p=gP();
   if(!en.landed){const q=(M.t-en.t0)/en.dur;if(q>=1){en.landed=true;en.y=en.ly}else{en.y=en.y0+(en.ly-en.y0)*q;continue}}
   const dx=p.x-en.x,dy=(p.y-1)-en.y,d=Math.hypot(dx,dy);if(d<8){gHurt(en);if(M.over)return;continue}en.x+=dx/d*en.sp*dt;en.y+=dy/d*en.sp*dt;en.face=dx>0?1:-1}
  if(M.pi===0){M.dogT+=dt;const alive=M.en.filter(e=>!e.dog&&e.landed);if(M.dogT>=8&&alive.length){M.dogT=0;let tg=alive[0];alive.forEach(e=>{if(Math.hypot(e.x-p.x,e.y-p.y)<Math.hypot(tg.x-p.x,tg.y-p.y))tg=e});tg.dog=1;const d=DOGS[M.dogN++%2];M.fx.push({k:'dog',d,x0:p.x+(d.name==='Lilith'?-14:14),y0:p.y+3,e:tg,t:M.t});sfx.bark(d.name==='Piko'?1.18:1)}}
- if(M.pi===2){M.dropT+=dt;if(M.dropT>=12){M.dropT=0;const tg=arPoint(AR.hw*.2);M.fx.push({k:'drop',x:Math.round(tg.x),y:Math.round(tg.y),t:M.t})}}
+ if(M.pi===2){M.dropT+=dt;if(M.dropT>=12){M.dropT=0;const tg=arPoint(Math.min(W,H)*.12);M.fx.push({k:'drop',x:Math.round(tg.x),y:Math.round(tg.y),t:M.t})}}
  M.fx=M.fx.filter(f=>{const a=M.t-f.t;if(f.k=='tr')return a<.07;
   if(f.k=='dog'){if(a>=.6){if(M.en.includes(f.e))gKill(f.e,f.d.name+' yakaladı!');return false}return true}
   if(f.k=='drop'){if(a>=1.8){if(M.hp<5){M.hp++;M.max=Math.max(M.max,M.hp)}gHud();sfx.revived();pop('+1 CAN',OX+f.x*S,OY+(f.y-14)*S,1100);return false}return true}return false});
