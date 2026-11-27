@@ -187,7 +187,9 @@ body.cuside #final{padding:0 calc(var(--cuw) + 3vw + 14px)}
       <div id="roster"></div>
       <button class="btn big" id="go">▶ BÖLÜM 1: UÇAKTAN ATLA</button>
       <button class="btn big alt" id="go2" style="margin-top:12px">▶ BÖLÜM 2: ATIŞ ALANI</button>
+      <!-- BÖLÜM 3 şimdilik kapalı. Açmak için bu yorumu kaldır:
       <button class="btn big alt" id="go3" style="margin-top:12px">▶ BÖLÜM 3: SAVAŞ ALANI</button>
+      -->
       <button class="btn alt close" id="recBtn">REKORLAR</button>
     </div>
   </div>
@@ -764,7 +766,8 @@ function openSel(mode){SELMODE=mode;$('#rewBox').hidden=mode==='br';$('#selOv h2
  $('#selOv .sub').textContent=mode==='br'?'Karakterini seç. 12 kişi uçaktan atlıyor, bölge daralıyor, son kalan kazanır. Sol taraf yürür, sağ taraf nişan alıp ateş eder.':'Karakterini seç. Rakiplere dokunarak vur, sana ulaşmalarına izin verme.';
  const order=[0,1,3,2];[...$('#selList').children].forEach((b,k)=>{b.querySelector('.ps').textContent=(mode==='br'?PASS3:PASS)[order[k]]});$('#start').hidden=true;$('#selOv').hidden=false}
 $('#go2').onclick=()=>{unlock();rewBox();openSel('b2')};
-$('#go3').onclick=()=>{unlock();openSel('br')};
+/* BÖLÜM 3 şimdilik kapalı (menü butonu yorumda). */
+if($('#go3'))$('#go3').onclick=()=>{unlock();openSel('br')};
 function toMenu(){$('#brUI').hidden=true;const wasBR=MODE==='br';document.body.classList.remove('brmode');BR=null;JS.L=null;JS.R=null;$('#recOv').hidden=true;$('#reloadBtn').hidden=true;$('#wx').textContent='HAVA: '+WXN[WX];MODE='idle';run=false;GM=null;if(wasBR)resize();['#selOv','#overOv','#lootOv'].forEach(q=>$(q).hidden=true);$('#start').hidden=false;
  $('#final').classList.remove('on');$('#acts').classList.remove('on');$('#cu').classList.remove('on');$('#hp').classList.remove('on');hint(0);nob();feedEl.innerHTML='';
  tags.forEach(e=>e.style.display='none');etags.forEach(e=>e.style.display='none');$('#tags').querySelectorAll('.pop').forEach(e=>e.remove());
