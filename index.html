@@ -74,6 +74,16 @@ button:focus-visible{outline:3px solid #fff;outline-offset:3px}
 .selb .ps{color:#cbbfdc;margin-top:4px;font-size:18px}
 #overBig{font-size:clamp(22px,7vw,34px);color:var(--gold);text-align:center;margin:6px 0 4px}
 #menu{min-height:36px}
+#rewBox{margin:4px 0 6px;padding:10px;background:#251733;border:2px dashed #5a4478}
+#rewBox .rt{font:9px/1.5 'Press Start 2P',monospace;color:var(--gold);margin-bottom:6px}
+#rewBox ul{list-style:none;margin:0;padding:0}#rewBox li{font-size:19px;line-height:1.25}#rewBox li.off{color:#7d6f90}
+#recList{margin:6px 0 0;padding:0;list-style:none;counter-reset:r}
+#recList li{display:grid;grid-template-columns:2.2em minmax(0,1fr) auto;gap:8px;align-items:baseline;padding:7px 4px;border-top:2px dashed rgba(255,248,225,.15);font-size:20px}
+#recList li::before{counter-increment:r;content:counter(r);font:10px 'Press Start 2P',monospace;color:var(--gold)}
+#recList li:first-child{color:var(--gold)}#recList .sc{font:10px 'Press Start 2P',monospace;white-space:nowrap}
+#recList .empty{display:block;color:#cbbfdc}#recList .empty::before{content:none}
+.sendrow{display:flex;gap:8px;margin-top:6px}.sendrow input{flex:1;min-width:0;font:16px 'VT323',monospace;font-size:20px;padding:8px 10px;background:#251733;color:var(--ink);border:2px solid #5a4478}
+.sendrow input:focus-visible{outline:3px solid #fff}
 #hud{flex-wrap:wrap;right:10px}
 @media(max-width:430px){.chip{font-size:8px;padding:7px 6px}}
 #reloadBtn{position:absolute;right:12px;bottom:calc(max(14px,3vh) + 26px);z-index:6}
@@ -142,6 +152,7 @@ body.cuside #final{padding:0 calc(var(--cuw) + 3vw + 14px)}
       <div id="roster"></div>
       <button class="btn big" id="go">▶ BÖLÜM 1: UÇAKTAN ATLA</button>
       <button class="btn big alt" id="go2" style="margin-top:12px">▶ BÖLÜM 2: ATIŞ ALANI</button>
+      <button class="btn alt close" id="recBtn">REKORLAR</button>
     </div>
   </div>
 
@@ -149,6 +160,7 @@ body.cuside #final{padding:0 calc(var(--cuw) + 3vw + 14px)}
     <div class="panel" role="dialog" aria-label="Karakter seç">
       <h2>BÖLÜM 2 · ATIŞ ALANI</h2>
       <p class="sub">Karakterini seç. Rakiplere dokunarak vur, sana ulaşmalarına izin verme.</p>
+      <div id="rewBox"></div>
       <div id="selList"></div>
       <button class="btn alt close" id="selBack">ANA MENÜ</button>
     </div>
@@ -159,9 +171,18 @@ body.cuside #final{padding:0 calc(var(--cuw) + 3vw + 14px)}
       <p class="sub" id="overTxt"></p>
       <div id="overBig" class="px"></div>
       <p class="note" id="overBest"></p>
+      <div id="sendBox" hidden><label class="rl" for="recName">Rekor tablosundaki adın</label><div class="sendrow"><input id="recName" maxlength="20" autocomplete="off"><button class="btn" id="sendBtn">GÖNDER</button></div><p class="note" id="sendMsg"></p></div>
       <button class="btn big" id="replay">TEKRAR OYNA</button>
       <button class="btn big alt" id="reselect" style="margin-top:10px">KARAKTER DEĞİŞTİR</button>
       <button class="btn alt close" id="overMenu">ANA MENÜ</button>
+    </div>
+  </div>
+  <div class="ov" id="recOv" hidden>
+    <div class="panel" role="dialog" aria-label="Rekorlar">
+      <h2>REKORLAR · BÖLÜM 2</h2>
+      <p class="sub" id="recSub"></p>
+      <ol id="recList"></ol>
+      <button class="btn alt close" id="recClose">KAPAT</button>
     </div>
   </div>
   <div class="ov" id="lootOv" hidden>
@@ -665,8 +686,8 @@ function begin(at){MODE='story';pickWx();DANCE=-99;CTAP.length=0;CUE.B=0;CUE.H=0
  if(at>0){EV.forEach((e,k)=>{if(tt(e)<at)fired.add(k)});for(let k=0;k<100;k++)upd(.033,CL+k*.033)}}
 function unlock(){audioInit();fxInit();if(AC&&AC.state!='running')AC.resume().catch(()=>{});music()}
 $('#go').onclick=()=>{unlock();$('#start').hidden=true;begin(0)};
-$('#go2').onclick=()=>{unlock();$('#start').hidden=true;$('#selOv').hidden=false};
-function toMenu(){$('#reloadBtn').hidden=true;$('#wx').textContent='HAVA: '+WXN[WX];MODE='idle';run=false;GM=null;['#selOv','#overOv','#lootOv'].forEach(q=>$(q).hidden=true);$('#start').hidden=false;
+$('#go2').onclick=()=>{unlock();rewBox();$('#start').hidden=true;$('#selOv').hidden=false};
+function toMenu(){$('#recOv').hidden=true;$('#reloadBtn').hidden=true;$('#wx').textContent='HAVA: '+WXN[WX];MODE='idle';run=false;GM=null;['#selOv','#overOv','#lootOv'].forEach(q=>$(q).hidden=true);$('#start').hidden=false;
  $('#final').classList.remove('on');$('#acts').classList.remove('on');$('#cu').classList.remove('on');$('#hp').classList.remove('on');hint(0);nob();feedEl.innerHTML='';
  tags.forEach(e=>e.style.display='none');etags.forEach(e=>e.style.display='none');$('#tags').querySelectorAll('.pop').forEach(e=>e.remove());
  $('#alive').textContent='TAKIM 4/4';$('#kills').textContent='ELEME 0';if(AMB)Object.keys(AMB).forEach(k=>amb(k,0))}
@@ -716,7 +737,32 @@ function bakeArena(){const n=document.createElement('canvas');n.width=W;n.height
  all.forEach(o=>{if(o.k=='t')tree(o.i,o.j);else if(o.k=='c')crate(o.i,o.j);else if(o.k=='r')rock(o.i,o.j);else{const c=HC[+o.k[1]%3];house(o.i,o.j,c[0],c[1],c[2],c[3])}});
  ARENA=n}
 function arPoint(minD){const p=gP();for(let q=0;q<40;q++){const x=8+Math.random()*(W-16),y=H*.2+Math.random()*(H*.78);if(Math.hypot(x-p.x,(y-p.y)*1.6)>(minD||0))return{x,y}}return{x:W*.85,y:p.y}}
-function startGame(i){pickWx();bakeArena();$('#selOv').hidden=true;$('#overOv').hidden=true;run=false;MODE='game';
+/* ---- seviye ödülleri (cihazda kayıtlı) ---- */
+const REW=[{lv:3,id:'rozet',name:'Bronz rozet'},{lv:5,id:'altin',name:'Altın silah'},{lv:8,id:'tac',name:'Taç'},{lv:10,id:'efsane',name:'"Efsane" unvanı ve altın aura'}];
+let MAXLV=0;try{MAXLV=+localStorage.getItem('pubgEkipMaxLv')||0}catch(e){}
+const hasR=id=>MAXLV>=REW.find(r=>r.id===id).lv;
+function rewBox(){const b=$('#rewBox');b.innerHTML='<div class="rt">ÖDÜLLERİN</div><ul></ul>';const ul=b.querySelector('ul');
+ REW.forEach(r=>{const li=document.createElement('li');const on=MAXLV>=r.lv;li.className=on?'':'off';li.textContent=(on?'✓ ':'· ')+'Seviye '+r.lv+': '+r.name+(on?'':' (kilitli)');ul.appendChild(li)});
+ const m=document.createElement('li');m.textContent='En yüksek seviyen: '+(MAXLV||'—');ul.appendChild(m)}
+rewBox();
+/* ---- rekor tablosu: Firebase ayarı girilince ortak, değilse bu cihazda ---- */
+const FB={projectId:'',apiKey:''};
+const fbOn=()=>!!(FB.projectId&&FB.apiKey);
+const FBU=()=>'https://firestore.googleapis.com/v1/projects/'+FB.projectId+'/databases/(default)/documents';
+let LOCREC=[];try{LOCREC=JSON.parse(localStorage.getItem('pubgEkipRec')||'[]')}catch(e){LOCREC=[]}
+function saveLocal(n,sc,lv){LOCREC.push({n,s:sc,l:lv});LOCREC.sort((a,b)=>b.s-a.s);LOCREC=LOCREC.slice(0,10);try{localStorage.setItem('pubgEkipRec',JSON.stringify(LOCREC))}catch(e){}}
+async function fetchTop(){const r=await fetch(FBU()+':runQuery?key='+FB.apiKey,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({structuredQuery:{from:[{collectionId:'scores'}],orderBy:[{field:{fieldPath:'score'},direction:'DESCENDING'}],limit:10}})});
+ if(!r.ok)throw new Error(r.status);const js=await r.json();return js.filter(x=>x.document).map(x=>{const f=x.document.fields||{};return{n:String((f.name||{}).stringValue||'?'),s:+((f.score||{}).integerValue||0),l:+((f.level||{}).integerValue||0)}})}
+async function sendTop(n,sc,lv){const r=await fetch(FBU()+'/scores?key='+FB.apiKey,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields:{name:{stringValue:n},score:{integerValue:String(sc)},level:{integerValue:String(lv)},ts:{timestampValue:new Date().toISOString()}}})});if(!r.ok)throw new Error(r.status)}
+function renderRec(list,msg){const ol=$('#recList');ol.innerHTML='';$('#recSub').textContent=msg;
+ if(!list.length){const li=document.createElement('li');li.className='empty';li.textContent='Henüz rekor yok. İlk sen ol!';ol.appendChild(li);return}
+ list.forEach(x=>{const li=document.createElement('li'),a=document.createElement('span'),b=document.createElement('span');a.textContent=x.n+(x.l?' · Sv '+x.l:'');b.className='sc';b.textContent=x.s+' ELEME';li.append(a,b);ol.appendChild(li)})}
+async function openRec(){$('#recOv').hidden=false;if(!fbOn()){renderRec(LOCREC,'Bu cihazdaki en iyi skorlar.');return}
+ renderRec([],'Yükleniyor…');try{renderRec(await fetchTop(),'Ekibin ortak rekor tablosu.')}catch(e){renderRec(LOCREC,'Ortak tabloya ulaşılamadı, bu cihazdaki skorlar gösteriliyor.')}}
+$('#recBtn').onclick=openRec;$('#recClose').onclick=()=>{$('#recOv').hidden=true};
+$('#sendBtn').onclick=async()=>{const M=GM;if(!M||M.sent)return;const n=($('#recName').value||'').trim().slice(0,20)||SQ[M.pi].name;try{localStorage.setItem('pubgEkipName',n)}catch(e){}
+ M.sent=1;$('#sendBtn').disabled=true;$('#sendMsg').textContent='Gönderiliyor…';try{await sendTop(n,M.score,M.lvl);$('#sendMsg').textContent='Rekor tablosuna eklendi!'}catch(e){M.sent=0;$('#sendBtn').disabled=false;$('#sendMsg').textContent='Gönderilemedi, bağlantını kontrol edip tekrar dene.'}};
+function startGame(i){$('#sendBtn').disabled=false;$('#sendMsg').textContent='';pickWx();bakeArena();$('#selOv').hidden=true;$('#overOv').hidden=true;run=false;MODE='game';
  GM={pi:i,t:0,score:0,hp:3,max:3,en:[],boxes:[],fx:[],next:1.2,pan:i===1?2:0,dogT:0,dropT:0,slow:i===3?.75:1,over:0,lastShot:-1,aim:null,hurt:-9,dogN:0,mag:MAG,rel:-1,lvl:1};
  $('#hp').classList.add('on');$('#reloadBtn').hidden=false;gHud();banner('SEVİYE 1');setTimeout(nob,1400)}
 function gHud(){const M=GM;$('#alive').textContent='CAN '+M.hp+(M.pi===1?' · TAVA '+M.pan:'');$('#kills').textContent='ELEME '+M.score;$('#wx').textContent=M.rel>=0?'DOLDURULUYOR':'MERMİ '+M.mag+'/'+MAG;$('#hp i').style.right=(1+(1-M.hp/M.max)*100)+'%'}
@@ -731,7 +777,7 @@ function gHurt(en){const M=GM;M.en.splice(M.en.indexOf(en),1);const p=gP();
  if(M.pan>0){M.pan--;sfx.tink();pop('TAVA!',OX+p.x*S,OY+(p.y-SH-6)*S,900)}else{M.hp--;M.hurt=M.t;sfx.down();if(M.hp<=0)gOver()}gHud()}
 function gOver(){const M=GM;M.over=M.t;$('#reloadBtn').hidden=true;const n=SQ[M.pi].name,sc=M.score,rk=sc<5?'Çaylak':sc<15?'Ekip üyesi':sc<30?'Usta nişancı':'Efsane';
  if(sc>BEST){BEST=sc;try{localStorage.setItem('pubgEkipBest',sc)}catch(e){}}
- setTimeout(()=>{if(GM!==M)return;$('#overTxt').textContent=n+' · '+rk+' · Seviye '+M.lvl;$('#overBig').textContent=sc+' ELEME';$('#overBest').textContent='Bu cihazdaki en iyi skor: '+BEST;$('#overOv').hidden=false;$('#hp').classList.remove('on')},900)}
+ setTimeout(()=>{if(GM!==M)return;$('#overTxt').textContent=n+' · '+rk+' · Seviye '+M.lvl;$('#overBig').textContent=sc+' ELEME';$('#overBest').textContent='Bu cihazdaki en iyi skor: '+BEST;if(sc>0)saveLocal(n,sc,M.lvl);rewBox();const sb=$('#sendBox');sb.hidden=!(fbOn()&&sc>0);if(!sb.hidden){let nm='';try{nm=localStorage.getItem('pubgEkipName')||''}catch(e){}$('#recName').value=nm||n}$('#overOv').hidden=false;$('#hp').classList.remove('on')},900)}
 $('#replay').onclick=()=>startGame(GM?GM.pi:0);$('#reselect').onclick=()=>{$('#overOv').hidden=true;$('#selOv').hidden=false};
 $('#reloadBtn').onclick=gReload;
 function gameTap(e){const M=GM;if(!M||M.over)return;if(M.rel>=0){sfx.dry();return}if(M.mag<=0){gReload();return}if(M.t-M.lastShot<.13)return;
@@ -740,7 +786,7 @@ function gameTap(e){const M=GM;if(!M||M.over)return;if(M.rel>=0){sfx.dry();retur
  const tx=hit?hit.x:ix,ty=hit?hit.y-SH+10:iy;M.aim={x:tx,t:M.t};M.fx.push({k:'tr',x0:p.x+(tx>p.x?10:-10),y0:p.y-15,x1:tx,y1:ty,t:M.t});sfx.shot(M.pi);if(hit)gKill(hit);
  if(M.mag<=0)setTimeout(gReload,180);gHud()}
 function gUpd(dt){const M=GM;if(M.over)return;M.t+=dt;const p=gP();
- const L=1+Math.floor(M.t/18);if(L!==M.lvl){M.lvl=L;banner('SEVİYE '+L);setTimeout(nob,1500);sfx.mark()}
+ const L=1+Math.floor(M.t/18);if(L!==M.lvl){M.lvl=L;const nr=L>MAXLV&&REW.find(r=>r.lv===L);if(L>MAXLV){MAXLV=L;try{localStorage.setItem('pubgEkipMaxLv',L)}catch(e){}}if(nr){banner('ÖDÜL AÇILDI: '+nr.name.toLocaleUpperCase('tr-TR').replace(/"/g,''));sfx.revived();setTimeout(nob,2600)}else{banner('SEVİYE '+L);sfx.mark();setTimeout(nob,1500)}}
  if(M.rel>=0&&M.t-M.rel>=RELOAD){M.rel=-1;M.mag=MAG;gHud()}
  M.next-=dt;if(M.next<=0){gSpawn();M.next=Math.max(.45,2-M.lvl*.22)}
  for(const en of [...M.en]){if(en.dog||M.t<en.t0)continue;
@@ -760,7 +806,9 @@ function gameFrame(dt,wall){const M=GM;if(!M)return;if(!ARENA||ARENA.width!==W||
    if(!en.landed)chute(en.x,Y-15,en.fast?'#ff5a4a':'#8a9aa8',1,en.x,Y+8,3);else R(X+1,Math.round(en.y),10,1,'rgba(0,0,0,.25)');
    if(en.face<0){g.save();g.translate(X+12,Y);g.scale(-1,1);g.drawImage(sp,0,0);g.restore()}else g.drawImage(sp,X,Y);if(en.fast&&en.landed&&(M.t*6|0)%2)R(X+4,Y-3,4,1,'#ff5a4a')}})),
   {y:p.y,f:()=>{const X=p.x-6,Y=p.y-SH;R(X+1,p.y,10,1,'rgba(0,0,0,.25)');if(M.over){g.save();g.translate(p.x+14,p.y-12);g.rotate(Math.PI/2);g.drawImage(c.A,0,0);g.restore();return}
-   g.drawImage(c.A,X,Y);const dr=M.aim&&M.t-M.aim.t<.4?(M.aim.x>p.x?1:-1):1;R(dr>0?X+9:X-7,Y+14,10,2,'#2b2b30');R(dr>0?X+11:X-3,Y+16,2,2,'#2b2b30');
+   g.drawImage(c.A,X,Y);const dr=M.aim&&M.t-M.aim.t<.4?(M.aim.x>p.x?1:-1):1;const gc=hasR('altin')?'#e8b830':'#2b2b30';R(dr>0?X+9:X-7,Y+14,10,2,gc);R(dr>0?X+11:X-3,Y+16,2,2,gc);if(hasR('altin'))R(dr>0?X+12:X-6,Y+14,3,1,'#fff3b0');
+   if(hasR('rozet'))R(X+3,Y+9,2,2,'#c88a3a');if(hasR('tac')){R(X+3,Y-3,6,2,'#ffcf3a');R(X+3,Y-5,1,2,'#ffcf3a');R(X+5,Y-6,2,3,'#ffcf3a');R(X+8,Y-5,1,2,'#ffcf3a');R(X+5,Y-3,2,1,'#e8463a')}
+   if(hasR('efsane')){const a=.25+.2*Math.sin(M.t*6);g.fillStyle='rgba(255,207,58,'+a+')';for(let d=-3;d<=3;d++)g.fillRect(p.x-9+Math.abs(d),p.y+d,18-2*Math.abs(d),1);if((M.t*5|0)%3==0)R(X+(M.t*37|0)%12,Y+(M.t*53|0)%SH,1,1,'#fff3b0')}
    if(M.rel>=0){const q=Math.min(1,(M.t-M.rel)/RELOAD);R(X-2,Y-6,16,3,'rgba(0,0,0,.55)');R(X-1,Y-5,Math.round(14*q),1,'#ffcf3a')}
    if(M.pi===1&&M.pan>0){R(X+10,Y+13,4,5,'#3a3a40');R(X+11,Y+13,2,1,'#6a6a74')}
    if(M.pi===0)DOGS.forEach(d=>{if(M.fx.some(f=>f.k=='dog'&&f.d===d))return;const dx=d.name==='Lilith'?-15:15,X2=p.x+dx-8,Y2=p.y+3-d.h;if(dx<0)g.drawImage(d.A,X2,Y2);else{g.save();g.translate(X2+16,Y2);g.scale(-1,1);g.drawImage(d.A,0,0);g.restore()}})}}];
