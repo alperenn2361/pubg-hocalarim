@@ -379,7 +379,7 @@ function drawMap(tm){const[mx,my]=MK();let z=1;if(tm>2.9)z=1+Math.pow((tm-2.9)/(
 const EM=[-99,-99,-99,-99],SAYK=[0,0,0,0],CTAP=[];let DANCE=-99;
 const dancing=t=>t-DANCE>=0&&t-DANCE<5;
 function disco(t){if(!dancing(t))return;const d=t-DANCE,cols=['255,79,163','95,208,255','255,207,58','155,92,255'];for(let k=0;k<4;k++){const cx=W*(k+.5)/4+Math.sin(d*2+k)*W*.12;g.fillStyle='rgba('+cols[(k+(d*2|0))%4]+',.13)';for(let y=0;y<G;y+=2){const w=Math.round(3+y*.18);g.fillRect(Math.round(cx-w+(G-y)*Math.sin(d*1.5+k)*.25),y,w*2,2)}}}
-const LINES=[["Aşını oldun mu?",["Ben ‘bu’yum!","Ben buyum!"],"Lilith, gel buraya!","Piko, otur!"],["Harita bende!","Her şey parayla alınabilir!","Kuzey bu tarafta!","Güvenli bölge orada!"],["Airdrop benim!","Revive at bana!","Kod yazıyorum, bekleyin."],["Anlat bakalım.",["çocuum","Çocuğum"],"Sakin ol, hallederiz.","Önce bir okula gelsin!"]];
+const LINES=[["Aşını oldun mu?",["Ben ‘bu’yum!","Ben buyum!"],"Lilith, gel buraya!","Piko, otur!"],["Harita bende!","Her şey parayla alınabilir!","Bir derece 60 dakikadır!","Kuzey bu tarafta!","Güvenli bölge orada!"],["Airdrop benim!","Revive at bana!","Kod yazıyorum, bekleyin."],["Anlat bakalım.",["çocuum","Çocuğum"],"Sakin ol, hallederiz.","Önce bir okula gelsin!"]];
 const ICONS=[[".k.k.","k.k.k",".kkk.","kkkkk",".kkk."],[".bbb.","bggbb","bgbbg","bbggb",".bbb."],["k...k",".k.k.","..k..",".k.k.","k...k"],["..y..",".yyy.","yyyyy",".yyy.","..y.."]];
 const ICOL=[{k:'#ff4fa3'},{b:'#3f82d8',g:'#5fbf6a'},{k:'#f0c94a'},{y:'#ffe066'}];
 function icon(i,x,y){const m=ICONS[i];m.forEach((r,yy)=>{for(let xx=0;xx<5;xx++){const c=ICOL[i][r[xx]];if(c)R(x-2+xx,y+yy,1,1,c)}})}
