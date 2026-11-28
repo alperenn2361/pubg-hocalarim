@@ -34,8 +34,8 @@ button:focus-visible{outline:3px solid #fff;outline-offset:3px}
 #hp{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);width:min(260px,56vw);height:12px;border:2px solid rgba(255,255,255,.85);background:rgba(0,0,0,.35);display:none;z-index:4}
 #hp i{position:absolute;inset:1px;background:#f4f4f4}
 #hp.on{display:block}
-#hint{position:absolute;left:50%;bottom:calc(max(14px,3vh) + 66px);transform:translateX(-50%);font:9px/1.4 'Press Start 2P',monospace;color:#fff;background:rgba(26,16,32,.75);padding:7px 10px;white-space:nowrap;display:none;z-index:4;pointer-events:none}
-#hint.on{display:block;animation:blink 1s steps(1) 3}
+#hint{z-index:7!important;position:absolute;left:50%;bottom:calc(max(14px,3vh) + 66px);transform:translateX(-50%);font:9px/1.4 'Press Start 2P',monospace;color:#fff;background:rgba(26,16,32,.75);padding:7px 10px;white-space:nowrap;display:none;z-index:4;pointer-events:none}
+#hint.on{display:block;animation:blink 1s steps(1) 3;border:2px solid var(--gold);background:rgba(26,16,32,.9);font-size:10px;color:var(--gold)}
 .pop{z-index:8;position:absolute;transform:translate(-50%,-100%);font:9px/1 'Press Start 2P',monospace;color:#fff;background:rgba(26,16,32,.8);padding:5px 6px;white-space:nowrap;pointer-events:none;animation:popup 1.1s steps(6) forwards}
 @keyframes popup{70%{opacity:1}to{opacity:0;margin-top:-14px}}
 .tag.dn{border-bottom-color:#ff4a3a;color:#ffb0a8}
@@ -379,7 +379,7 @@ function drawMap(tm){const[mx,my]=MK();let z=1;if(tm>2.9)z=1+Math.pow((tm-2.9)/(
 const EM=[-99,-99,-99,-99],SAYK=[0,0,0,0],CTAP=[];let DANCE=-99;
 const dancing=t=>t-DANCE>=0&&t-DANCE<5;
 function disco(t){if(!dancing(t))return;const d=t-DANCE,cols=['255,79,163','95,208,255','255,207,58','155,92,255'];for(let k=0;k<4;k++){const cx=W*(k+.5)/4+Math.sin(d*2+k)*W*.12;g.fillStyle='rgba('+cols[(k+(d*2|0))%4]+',.13)';for(let y=0;y<G;y+=2){const w=Math.round(3+y*.18);g.fillRect(Math.round(cx-w+(G-y)*Math.sin(d*1.5+k)*.25),y,w*2,2)}}}
-const LINES=[["Aşını oldun mu?","Lilith, gel buraya!","Piko, otur!"],["Harita bende!","Kuzey bu tarafta!","Güvenli bölge orada!"],["Airdrop benim!","Revive at bana!","Kod yazıyorum, bekleyin."],["Anlat bakalım.",["çocuum","Çocuğum"],"Sakin ol, hallederiz.","Önce bir okula gelsin!"]];
+const LINES=[["Aşını oldun mu?","Lilith, gel buraya!","Piko, otur!"],["Harita bende!","Her şey parayla alınabilir!","Kuzey bu tarafta!","Güvenli bölge orada!"],["Airdrop benim!","Revive at bana!","Kod yazıyorum, bekleyin."],["Anlat bakalım.",["çocuum","Çocuğum"],"Sakin ol, hallederiz.","Önce bir okula gelsin!"]];
 const ICONS=[[".k.k.","k.k.k",".kkk.","kkkkk",".kkk."],[".bbb.","bggbb","bgbbg","bbggb",".bbb."],["k...k",".k.k.","..k..",".k.k.","k...k"],["..y..",".yyy.","yyyyy",".yyy.","..y.."]];
 const ICOL=[{k:'#ff4fa3'},{b:'#3f82d8',g:'#5fbf6a'},{k:'#f0c94a'},{y:'#ffe066'}];
 function icon(i,x,y){const m=ICONS[i];m.forEach((r,yy)=>{for(let xx=0;xx<5;xx++){const c=ICOL[i][r[xx]];if(c)R(x-2+xx,y+yy,1,1,c)}})}
@@ -395,17 +395,17 @@ const LIL={rows:[...DTOP,"...DBBBBBBBWW...","...DDBBBBBBWW..."],legA:["...BB....
 const PIK={rows:[...DTOP,"...DDBBBBBBWW..."],legA:["...BB.....BW....","...BB.....BW....","...BB.....BW....","...BB.....BW....","...WW.....WW...."],legB:["..BB.......BW...","..BB.......BW...","..BB.......BW...","..BB.......BW...","..WW.......WW..."],
  pal:{B:'#1f1d22',D:'#141216',W:'#3c3a42',k:'#d8a24a',n:'#000000',c:'#c0392b',e:'#2e2c34',t:'#1f1d22'}};
 function mkDog(d,legs){const rows=[...d.rows,...legs];return mapCanvas(rows,d.pal)}
-const DOGS=[{name:'Lilith',def:LIL,off:-3,fy:9},{name:'Piko',def:PIK,off:11,fy:14}];
+const DOGS=[{name:'Lilith',def:LIL,off:-13,fy:2},{name:'Piko',def:PIK,off:13,fy:4}];
 DOGS.forEach(d=>{d.A=mkDog(d.def,d.def.legA);d.B=mkDog(d.def,d.def.legB);d.h=d.A.height});
 function dogsReset(){DOGS.forEach(d=>{d.x=-24;d.face=1;d.mv=0;d.hop=-9;d.wag=0;d.fetch=null})}dogsReset();
 const BALL=mapCanvas([".rr.","rORr","rrOr",".rr."],{r:'#e8641c',O:'#ff9a4a'});
 function dogsUpd(dt,t){if(t<landT(0)+.3)return;const b=pos(0,t);if(!b)return;
  DOGS.forEach((d,k)=>{const F=d.fetch;if(F){const ft=t-F.t0;if(ft<.7){d.mv=0;return}if(!F.got){const dx=F.bx-d.x;d.mv=Math.abs(dx)>1;if(d.mv){d.x+=Math.sign(dx)*Math.min(Math.abs(dx),75*dt);d.face=dx>0?1:-1}else{F.got=t;sfx.squeak();d.hop=t}return}if(t-F.got>1.6)d.fetch=null}
-  const tx=b.x+d.off+(t>=OPEN?(k?6:-8):0),dx=tx-d.x,sp=t<landT(0)+3?55:42;d.mv=Math.abs(dx)>1.2;if(d.mv){d.x+=Math.sign(dx)*Math.min(Math.abs(dx),sp*dt);d.face=dx>0?1:-1}})}
-function drawDogs(t){if(t<landT(0)+.3)return;DOGS.forEach(d=>{const x=Math.round(d.x),fy=G+d.fy,hd=t-d.hop,dy=hd>=0&&hd<.5?-Math.round(Math.abs(Math.sin(hd*12))*4):(dancing(t)?-Math.round(Math.abs(Math.sin((t-DANCE)*9+d.off))*4):0),fr=d.mv&&((t*10|0)%2)?d.B:d.A;
+  const tx=Math.max(9,Math.min(W-9,t>=OPEN?b.x+(k?-22:-11):b.x+d.off)),dx=tx-d.x,sp=t<landT(0)+3?55:42;d.mv=Math.abs(dx)>1.2;if(d.mv){d.x+=Math.sign(dx)*Math.min(Math.abs(dx),sp*dt);d.face=dx>0?1:-1}})}
+function drawDogs(t,DL){if(t<landT(0)+.3)return;DOGS.forEach(d=>DL.push({y:G+d.fy,f:()=>{const x=Math.round(d.x),fy=G+d.fy,hd=t-d.hop,dy=hd>=0&&hd<.5?-Math.round(Math.abs(Math.sin(hd*12))*4):(dancing(t)?-Math.round(Math.abs(Math.sin((t-DANCE)*9+d.off))*4):0),fr=d.mv&&((t*10|0)%2)?d.B:d.A;
  R(x-6,fy,13,1,'rgba(0,0,0,.25)');const X=x-8,Y=fy-d.h+dy;if(d.face<0){g.save();g.translate(X+16,Y);g.scale(-1,1);g.drawImage(fr,0,0);g.restore()}else g.drawImage(fr,X,Y);
  if(d.name==='Lilith'){const F=d.fetch;let inMouth=!F||F.got;if(F&&!F.got){const ft=t-F.t0;if(ft>=.25){const p=Math.min(1,(ft-.25)/.45),bx=F.x0+(F.bx-F.x0)*p,by=fy-6-Math.sin(p*Math.PI)*14+(p>=1?4:0);g.drawImage(BALL,Math.round(bx)-2,Math.round(by)-2)}else inMouth=true}
-  if(inMouth){const mx=d.face>0?X+14:X-2;g.drawImage(BALL,mx,Y+4);R(d.face>0?mx+3:mx-1,Y+3,2,1,'#d8b48a')}}})}
+  if(inMouth){const mx=d.face>0?X+14:X-2;g.drawImage(BALL,mx,Y+4);R(d.face>0?mx+3:mx-1,Y+3,2,1,'#d8b48a')}}}}))}
 function fetchBall(d,t){if(d.fetch)return;const dir=d.x<W/2?1:-1,bx=Math.max(8,Math.min(W-8,d.x+dir*(28+Math.random()*16)));d.fetch={t0:t,x0:d.x,bx,got:0};d.hop=t;sfx.swoosh();pop('Lilith: Hav!',OX+d.x*S,OY+(G+d.fy-d.h-4)*S)}
 function bark(d,t){d.hop=t;sfx.bark(d.name==='Piko'?1.18:1);pop(d.name+': Hav!',OX+d.x*S,OY+(G+d.fy-d.h-4)*S)}
 function pop(txt,x,y,ms){ms=ms||1100;const e=document.createElement('div');e.className='pop px';e.style.animationDuration=ms+'ms';e.textContent=txt;$('#tags').appendChild(e);place(e,x,y);setTimeout(()=>e.remove(),ms)}
@@ -581,7 +581,7 @@ const feedEl=$('#feed'),ban=$('#banner');
 function feed(parts,lab,lc){feedEl.innerHTML='';const d=document.createElement('div');d.className='kf';if(lab){const l=document.createElement('span');l.className='kl'+(lc?' '+lc:'');l.textContent=lab;d.appendChild(l)}parts.forEach(([t,c])=>{const s=document.createElement('span');s.textContent=t;if(c)s.style.color=c;d.appendChild(s)});feedEl.appendChild(d);sfx.blip();setTimeout(()=>d.remove(),6700)}
 function banner(t,bl){ban.textContent=t;ban.className='px on'+(bl?' blink':'')}
 const nob=()=>{ban.className='px'};
-const hint=on=>$('#hint').classList.toggle('on',!!on);
+const hint=on=>{const h=$('#hint');if(on){const a=$('#acts'),r=a.classList.contains('on')?a.getBoundingClientRect():null;h.style.bottom=r?(innerHeight-r.top+10)+'px':''}h.classList.toggle('on',!!on)};
 
 /* ---------- enemies ---------- */
 const KILLS=[{s:0,f:[-.08,-20],e:[.03,4],t:7.6,name:'Kuduz_Karabaş',msg:"'ın aşılarını yaptı"},
@@ -599,12 +599,12 @@ const etags=KILLS.map(k=>{const d=document.createElement('div');d.className='tag
 function epos(k,t){const ta=k.a||k.t-1.1,ar=k.r||k.t-.2,ex=Math.round(W*k.e[0]),ey=G+k.e[1],sx=Math.round(W*k.f[0]),sy=k.f[1]==99?H+22:G+k.f[1];
  if(t>=ar)return{x:ex,y:ey,m:0};const p=(t-ta)/(ar-ta);return{x:sx+(ex-sx)*p,y:sy+(ey-sy)*p,m:1}}
 function place(el,x,y){const h=el.offsetWidth/2+6;el.style.left=Math.max(h,Math.min(innerWidth-h,x))+'px';el.style.top=Math.max(24,y)+'px'}
-function enemies(t){KILLS.forEach((k,n)=>{const el=etags[n];
+function enemies(t,DL){KILLS.forEach((k,n)=>{const el=etags[n];
  if(t<(k.a||k.t-1.1)){el.style.display='none';return}
  const e=epos(k,t);
- if(t>=k.t+.5){el.style.display='none';box(e.x,e.y);return}
- const fr=e.m&&((t*8|0)%2);R(Math.round(e.x)-5,Math.round(e.y),10,1,'rgba(0,0,0,.25)');
- if(!(t>k.t+.25&&(t*20|0)%2))g.drawImage(fr?k.B:k.A,Math.round(e.x)-6,Math.round(e.y)-SH-(fr?1:0));
+ if(t>=k.t+.5){el.style.display='none';DL.push({y:e.y,f:()=>box(e.x,e.y)});return}
+ const fr=e.m&&((t*8|0)%2);DL.push({y:e.y,f:()=>{R(Math.round(e.x)-5,Math.round(e.y),10,1,'rgba(0,0,0,.25)');
+ if(!(t>k.t+.25&&(t*20|0)%2))g.drawImage(fr?k.B:k.A,Math.round(e.x)-6,Math.round(e.y)-SH-(fr?1:0))}});
  el.style.display='block';place(el,OX+e.x*S,OY+(e.y-SH-2)*S);
  if(k.knock&&t>=KN0-.1&&t<KN0-.02){const ap=pos(2,t);if(ap){const d=ap.x>e.x?1:-1;R(Math.round(e.x)+d*7,Math.round(e.y)-15,3,3,'#ffd24a');line(e.x+d*9,e.y-14,ap.x,G-16,'#fff3a0')}}
  const sp=pos(k.s,t);if(sp&&t>k.t-.4){const d=e.x>sp.x?1:-1,gx=Math.round(sp.x)+d*3,gy=G-14;R(d>0?gx:gx-9,gy,10,2,'#2b2b30');R(d>0?gx+2:gx-6,gy+2,2,2,'#2b2b30');
@@ -1183,6 +1183,7 @@ function frame(now){const dt=Math.min(.05,(now-last)/1000||0);last=now;const wal
   P.forEach(p=>blob(p.x,p.y,p.r,p.c,Math.max(0,(1-p.l/p.m))*.85));
   if(t>OPEN){g.drawImage(CHICK,cxx-8,G-22+Math.round(Math.sin(t*4)))}
   LID.forEach(p=>R(p.x,p.y,8,3,'#a82820'));
+  const DL=[];enemies(t,DL);drawDogs(t,DL);DL.sort((a,b)=>a.y-b.y);DL.filter(o=>o.y<G).forEach(o=>o.f());
   SQ.forEach((c,i)=>{const p=pos(i,t),el=tags[i];if(!p){el.style.display='none';return}
    const top=p.y-SH;if(p.ch>0)chute(p.x,top-15,c.col,p.ch,p.x,top+8,3);if(p.ch<0)chute(p.x+(1+p.ch)*8,top-15+(1+p.ch)*10,c.col,p.ch,0,0,0);
    if(p.y>=G-1)R(Math.round(p.x)-5,G,10,1,'rgba(0,0,0,.25)');
@@ -1205,8 +1206,7 @@ function frame(now){const dt=Math.min(.05,(now-last)/1000||0);last=now;const wal
    if(t<OPEN){el.style.display='block';place(el,OX+p.x*S,OY+(top-(p.ch>0?16:2))*S-(i%2?16:0))}else el.style.display='none'}});
   if(t>=PAN-.08&&t<PAN){const b=pos(1,t);if(b)line(W+2,G-44,b.x+6,G-SH+15,'#fff3a0')}
   if(t>=PAN&&t<PAN+.35){const b=pos(1,t);if(b)for(let k=0;k<7;k++){const a=k*0.9+t*20;R(Math.round(b.x)+6+Math.round(Math.cos(a)*(2+(t-PAN)*14)),G-SH+15+Math.round(Math.sin(a)*(2+(t-PAN)*14)),1,1,k%2?'#ffe066':'#fff')}}
-  enemies(t);
-  drawDogs(t);
+  DL.filter(o=>o.y>=G).forEach(o=>o.f());
   C.forEach(p=>R(p.x,p.y,(p.l*20|0)%2?2:1,1,p.c));
   if(t>OPEN&&t<OPEN+.5){g.fillStyle='rgba(255,255,255,'+(1-(t-OPEN)/.5)+')';g.fillRect(0,0,W,H)}
   disco(t);wxFront(wall);
